@@ -4,16 +4,21 @@
 		<table class="table" v-if="rates">
 			<thead>
 			<tr>
-				<th>Number</th>
+				<th>№</th>
 				<th>Full name</th>
 				<th>Price</th>
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="(item, ind) in rates">
+			<tr v-for="(item, ind) in ratesTop" :key="ind">
 				<td>{{ ind + 1 }}</td>
 				<td>{{ item.CoinInfo.FullName }}</td>
-				<td>{{ item.DISPLAY.USD.PRICE }}</td>
+				<td>{{ item.DISPLAY ? item.DISPLAY.USD.PRICE : 'none' }}</td>
+			</tr>
+			<tr v-for="(item, ind) in rates" :key="ind">
+				<td>{{ ind + 100 }}</td>
+				<td>{{ item.CoinInfo.FullName }}</td>
+				<td>{{ item.DISPLAY ? item.DISPLAY.USD.PRICE : 'none' }}</td>
 			</tr>
 			</tbody>
 		</table>
@@ -22,38 +27,34 @@
 </template>
 
 <script>
-	import axios from 'axios'
 	import {mapGetters} from 'vuex';
 
 	export default {
 		name: 'app',
-		data () {
-			return {
-				limit: 10,
-				posts: []
-			}
-		},
 		created() {
-			this.$store.dispatch('global/GETRATES', 100)
+			this.$store.dispatch('global/REFRESH');
+			setInterval(function () {
+				this.$store.dispatch('global/REFRESH')
+			}.bind(this), 120000);
 		},
 		computed: {
 			...mapGetters({
 				rates: 'global/getRates',
+				ratesTop: 'global/getRatesTop',
 			})
 		},
 		methods: {
-			scroll (rates) {
+			scroll() {
 				window.onscroll = () => {
-					let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >= document.documentElement.scrollHeight;
+					let bottomOfWindow = window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight;
 					if (bottomOfWindow) {
-
 						this.$store.dispatch('global/GETRATES', 100)
 					}
 				};
 			},
 		},
 		mounted() {
-			this.scroll(this.rates100);
+			this.scroll();
 		}
 	}
 </script>
@@ -62,25 +63,34 @@
 	* {
 		box-sizing: border-box;
 	}
-	html {
-		/*min-height: 100vw;*/
-		font-size: 18px;
-	}
-	body {
-		/*min-height: 100vw;*/
-	}
 
+	html {
+		font-size: 18px;
+		font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+	}
 
 	.container {
 		width: 100%;
 		padding: 0 20px;
 		text-align: center;
-		/*max-width: 1280px;*/
 		margin: 0 auto;
 	}
 
 	table {
 		margin: 0 auto;
+		border-collapse: collapse;
 	}
 
+	th {
+		background: #ccc;
+		font-size: 18px;
+	}
+
+	tr {
+		border: 1px solid #000;
+	}
+
+	tr:nth-child(2n) {
+		background: #ccc;
+	}
 </style>

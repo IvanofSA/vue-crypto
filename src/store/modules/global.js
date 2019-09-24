@@ -4,10 +4,11 @@ export default {
 	namespaced: true,
 	state: {
 		rates: [],
+		ratesTop: [],
 		endpoint: 'https://min-api.cryptocompare.com/data/top/mktcapfull',
 		limit: 100,
-		page: 0,
-		tsym: 'USD',
+		page: 2,
+		tsym: 'USD'
 	},
 	getters: {
 		getEndpoint(state) {
@@ -19,19 +20,48 @@ export default {
 		getRates(state) {
 			return state.rates
 		},
+		getRatesTop(state) {
+			return state.ratesTop
+		},
 	},
 	mutations: {
+		refresh(state, data) {
+			state.ratesTop = data;
+			state.ratesTop.sort((a, b) => {
+				return b.RAW.USD.PRICE - a.RAW.USD.PRICE;
+			});
+		},
 		getRates(state, data) {
-			// state.rates = new Set([...state.rates, ...data])
-			state.rates = [...state.rates, ...data];
-
-
+			let arr = [...state.rates, ...data];
+			state.rates = arr.filter((el) => {
+				if (el.RAW) {
+					return el
+				}
+			});
+			state.rates.sort((a, b) => {
+				return b.RAW.USD.PRICE - a.RAW.USD.PRICE;
+			});
 			state.page = state.page + 2;
 		}
 	},
 	actions: {
+		REFRESH(store) {
+			axios.get(store.state.endpoint, {
+				params: {
+					limit: 100,
+					page: 0,
+					tsym: store.state.tsym,
+				}
+			})
+				.then(response => {
+					let data = response.data;
+					store.commit('refresh', data.Data);
+				})
+				.catch(error => {
+					console.log(error)
+				});
+		},
 		GETRATES(store, limit) {
-
 			axios.get(store.state.endpoint, {
 				params: {
 					limit: limit,
@@ -41,14 +71,10 @@ export default {
 			})
 				.then(response => {
 					let data = response.data;
-					data.Data.sort((a, b) => {
-						return b.RAW.USD.PRICE - a.RAW.USD.PRICE;
-					});
-
 					store.commit('getRates', data.Data);
 				})
 				.catch(error => {
-					console.log(error);
+					console.log(error)
 				});
 		}
 	}
