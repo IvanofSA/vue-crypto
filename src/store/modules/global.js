@@ -23,6 +23,9 @@ export default {
 	mutations: {
 		getRates(state, data) {
 			// state.rates = new Set([...state.rates, ...data])
+			state.rates = [...state.rates, ...data];
+
+
 			state.page = state.page + 2;
 		}
 	},
@@ -38,11 +41,9 @@ export default {
 			})
 				.then(response => {
 					let data = response.data;
-					// data.Data.sort((a, b) => {
-					// 	return b.RAW.USD.PRICE - a.RAW.USD.PRICE;
-					// });
-
-					console.log(data.Data);
+					data.Data.sort((a, b) => {
+						return b.RAW.USD.PRICE - a.RAW.USD.PRICE;
+					});
 
 					store.commit('getRates', data.Data);
 				})
