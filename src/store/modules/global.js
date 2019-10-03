@@ -8,7 +8,8 @@ export default {
 		endpoint: 'https://min-api.cryptocompare.com/data/top/mktcapfull',
 		limit: 100,
 		page: 2,
-		tsym: 'USD'
+		tsym: 'USD',
+		timerID: null
 	},
 	getters: {
 		getEndpoint(state) {
@@ -46,20 +47,25 @@ export default {
 	},
 	actions: {
 		REFRESH(store) {
-			axios.get(store.state.endpoint, {
-				params: {
-					limit: 100,
-					page: 0,
-					tsym: store.state.tsym,
-				}
-			})
+			store.timerID = setTimeout(function send() {
+				axios.get(store.state.endpoint, {
+					params: {
+						limit: 100,
+						page: 0,
+						tsym: store.state.tsym,
+					}
+				})
 				.then(response => {
 					let data = response.data;
 					store.commit('refresh', data.Data);
+					store.timerID = setTimeout(send, 1000)
+
 				})
 				.catch(error => {
 					console.log(error)
+					store.timerID = setTimeout(send, 1000)
 				});
+			}, 1000)
 		},
 		GETRATES(store, limit) {
 			axios.get(store.state.endpoint, {

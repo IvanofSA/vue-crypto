@@ -33,9 +33,6 @@
 		name: 'app',
 		created() {
 			this.$store.dispatch('global/REFRESH');
-			setInterval(function () {
-				this.$store.dispatch('global/REFRESH')
-			}.bind(this), 120000);
 		},
 		computed: {
 			...mapGetters({
